@@ -3,7 +3,7 @@ Theme Name: Ville Résiliente
 Theme URI: https://lavilleresiliente.com
 Author: Ville Résiliente
 Description: Carnet éditorial sur Abidjan — mobilité, mémoire et résilience urbaine. Palette Sahel, typographie Bricolage Grotesque / Newsreader, illustrations au trait.
-Version: 1.1.0
+Version: 1.2.0
 Requires at least: 6.0
 Requires PHP: 7.4
 License: GNU General Public License v2 or later
@@ -822,4 +822,16 @@ header.site.menu-open .menu-toggle .bar-3 { transform: translateY(-8px) rotate(-
     font-size: 12px;
   }
   nav.site a + a { border-top: 1px solid var(--rule); }
+}
+
+/* Featured images with a see-through background (drawings, logos):
+   shown whole and centred on the panel colour instead of cropped */
+.featured .panel.has-photo.is-drawing { padding: 9% 14%; }
+.stories .panel.has-photo.is-drawing { padding: 16%; }
+.featured .panel.has-photo.is-drawing img,
+.stories .panel.has-photo.is-drawing img { object-fit: contain; }
+.article .lead-img.is-drawing {
+  object-fit: contain;
+  background: var(--sage);
+  padding: 8% 14%;
 }

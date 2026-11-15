@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'VR_VERSION', '1.1.0' );
+define( 'VR_VERSION', '1.2.0' );
 
 /** Posts shown on the homepage: one featured + the "Autres récits" grid. */
 define( 'VR_HOME_COUNT', 7 );
@@ -314,6 +314,104 @@ add_filter( 'found_posts', 'vr_home_paged_found_posts', 10, 2 );
 /* ------------------------------------------------------------------
  * Post helpers
  * ------------------------------------------------------------------ */
+
+/**
+ * Whether an image has a see-through background (a drawing or logo rather than a photo).
+ * Such images are shown whole on the coloured panel instead of being cropped to fill it.
+ * The answer is cached on the attachment and recomputed when its files are regenerated.
+ */
+function vr_image_is_transparent( $attachment_id ) {
+	$attachment_id = (int) $attachment_id;
+	if ( ! $attachment_id ) {
+		return false;
+	}
+
+	$cached = get_post_meta( $attachment_id, '_vr_transparent', true );
+	if ( 'yes' === $cached || 'no' === $cached ) {
+		return 'yes' === $cached;
+	}
+
+	$transparent = vr_detect_transparency( $attachment_id );
+	update_post_meta( $attachment_id, '_vr_transparent', $transparent ? 'yes' : 'no' );
+	return $transparent;
+}
+
+function vr_forget_transparency( $data, $attachment_id ) {
+	delete_post_meta( $attachment_id, '_vr_transparent' );
+	return $data;
+}
+add_filter( 'wp_update_attachment_metadata', 'vr_forget_transparency', 10, 2 );
+
+function vr_detect_transparency( $attachment_id ) {
+	$mime = get_post_mime_type( $attachment_id );
+	if ( 'image/svg+xml' === $mime ) {
+		return true;
+	}
+	if ( ! in_array( $mime, array( 'image/png', 'image/gif', 'image/webp' ), true ) ) {
+		return false;
+	}
+
+	$file = get_attached_file( $attachment_id );
+	if ( ! $file || ! is_readable( $file ) ) {
+		return false;
+	}
+
+	// The file format must be able to hold transparency at all.
+	$head = (string) file_get_contents( $file, false, null, 0, 65536 );
+	if ( 'image/png' === $mime ) {
+		$color_type = isset( $head[25] ) ? ord( $head[25] ) : 0;
+		$has_alpha  = in_array( $color_type, array( 4, 6 ), true ) || false !== strpos( (string) strstr( $head, 'IDAT', true ), 'tRNS' );
+	} elseif ( 'image/webp' === $mime ) {
+		$has_alpha = 'VP8X' === substr( $head, 12, 4 ) && ( ord( $head[20] ) & 0x10 );
+	} else {
+		$has_alpha = true;
+	}
+	if ( ! $has_alpha ) {
+		return false;
+	}
+
+	// A photo saved with an alpha channel is still opaque: look at the corners and edge
+	// midpoints of a small copy, where a drawing's background shows.
+	if ( ! function_exists( 'imagecreatefromstring' ) ) {
+		return true;
+	}
+	$sample = $file;
+	$medium = image_get_intermediate_size( $attachment_id, 'medium' );
+	if ( $medium && ! empty( $medium['path'] ) ) {
+		$uploads = wp_get_upload_dir();
+		$sample  = trailingslashit( $uploads['basedir'] ) . $medium['path'];
+	} else {
+		$size = wp_getimagesize( $file );
+		if ( ! $size || $size[0] * $size[1] > 4000000 ) {
+			return true;
+		}
+	}
+	$img = is_readable( $sample ) ? @imagecreatefromstring( (string) file_get_contents( $sample ) ) : false; // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+	if ( ! $img ) {
+		return true;
+	}
+
+	$w      = imagesx( $img ) - 1;
+	$h      = imagesy( $img ) - 1;
+	$points = array( array( 0, 0 ), array( $w, 0 ), array( 0, $h ), array( $w, $h ), array( (int) ( $w / 2 ), 0 ), array( (int) ( $w / 2 ), $h ), array( 0, (int) ( $h / 2 ) ), array( $w, (int) ( $h / 2 ) ) );
+	$clear  = imagecolortransparent( $img );
+	$found  = false;
+	foreach ( $points as $point ) {
+		$index = imagecolorat( $img, $point[0], $point[1] );
+		$rgba  = imagecolorsforindex( $img, $index );
+		if ( $rgba['alpha'] >= 100 || ( $clear >= 0 && $index === $clear ) ) {
+			$found = true;
+			break;
+		}
+	}
+	unset( $img );
+	return $found;
+}
+
+/** Whether the post's featured image is a drawing (see-through background). */
+function vr_thumbnail_is_drawing( $post = null ) {
+	return has_post_thumbnail( $post ) && vr_image_is_transparent( get_post_thumbnail_id( $post ) );
+}
 
 /** First real category of a post; null when it only has the default "Non classé". */
 function vr_primary_category( $post = null ) {

@@ -9,14 +9,16 @@
 
 $vr_index = isset( $args['index'] ) ? (int) $args['index'] : 0;
 $vr_cat   = vr_primary_category();
-$vr_photo = has_post_thumbnail();
+$vr_photo   = has_post_thumbnail();
+$vr_drawing = vr_thumbnail_is_drawing();
 ?>
 <a class="card card-hover" href="<?php the_permalink(); ?>">
-	<span class="panel p-<?php echo esc_attr( ( $vr_index % 3 ) + 1 ); ?><?php echo $vr_photo ? ' has-photo' : ''; ?>">
-		<?php if ( $vr_photo ) : ?>
-			<?php the_post_thumbnail( 'vr-card', array( 'alt' => '' ) ); ?>
-		<?php else : ?>
+	<span class="panel p-<?php echo esc_attr( ( $vr_index % 3 ) + 1 ); ?><?php echo $vr_photo ? ' has-photo' : ''; ?><?php echo $vr_drawing ? ' is-drawing' : ''; ?>">
+		<?php if ( ! $vr_photo || $vr_drawing ) : ?>
 			<span class="num"><?php echo esc_html( str_pad( (string) ( $vr_index + 1 ), 2, '0', STR_PAD_LEFT ) ); ?></span>
+		<?php endif; ?>
+		<?php if ( $vr_photo ) : ?>
+			<?php the_post_thumbnail( $vr_drawing ? 'large' : 'vr-card', array( 'alt' => '' ) ); ?>
 		<?php endif; ?>
 	</span>
 	<span class="card-body" style="display:block;">

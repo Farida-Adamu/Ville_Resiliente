@@ -64,18 +64,20 @@ $vr_sub   = vr_opt( 'vr_hero_subtitle' );
 	$post = $vr_featured; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 	setup_postdata( $post );
 	$vr_cat   = vr_primary_category();
-	$vr_photo = has_post_thumbnail();
+	$vr_photo   = has_post_thumbnail();
+	$vr_drawing = vr_thumbnail_is_drawing();
 	?>
 	<section class="featured">
 		<div class="kicker-row">
 			<span class="mono kicker"><?php esc_html_e( 'À la une', 'ville-resiliente' ); ?></span>
 		</div>
 		<div class="grid">
-			<a class="panel card-hover<?php echo $vr_photo ? ' has-photo' : ''; ?>" href="<?php the_permalink(); ?>" aria-label="<?php echo esc_attr( sprintf( 'Lire le récit : %s', get_the_title() ) ); ?>">
-				<?php if ( $vr_photo ) : ?>
-					<?php the_post_thumbnail( 'vr-lead', array( 'alt' => '' ) ); ?>
-				<?php elseif ( $vr_cat ) : ?>
+			<a class="panel card-hover<?php echo $vr_photo ? ' has-photo' : ''; ?><?php echo $vr_drawing ? ' is-drawing' : ''; ?>" href="<?php the_permalink(); ?>" aria-label="<?php echo esc_attr( sprintf( 'Lire le récit : %s', get_the_title() ) ); ?>">
+				<?php if ( $vr_cat && ( ! $vr_photo || $vr_drawing ) ) : ?>
 					<span class="corner mono" style="color: var(--ink);"><?php echo esc_html( $vr_cat->name ); ?></span>
+				<?php endif; ?>
+				<?php if ( $vr_photo ) : ?>
+					<?php the_post_thumbnail( $vr_drawing ? 'large' : 'vr-lead', array( 'alt' => '' ) ); ?>
 				<?php endif; ?>
 			</a>
 			<div>

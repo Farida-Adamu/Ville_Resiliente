@@ -20,7 +20,8 @@ while ( have_posts() ) :
 		<?php if ( has_post_thumbnail() ) : ?>
 			<?php $vr_caption = get_the_post_thumbnail_caption(); ?>
 			<figure class="lead<?php echo $vr_caption ? '' : ' no-caption'; ?>">
-				<?php the_post_thumbnail( 'vr-lead', array( 'class' => 'lead-img' ) ); ?>
+				<?php $vr_drawing = vr_thumbnail_is_drawing(); ?>
+				<?php the_post_thumbnail( $vr_drawing ? 'large' : 'vr-lead', array( 'class' => 'lead-img' . ( $vr_drawing ? ' is-drawing' : '' ) ) ); ?>
 				<?php if ( $vr_caption ) : ?>
 					<figcaption class="cap mono"><?php echo esc_html( $vr_caption ); ?></figcaption>
 				<?php endif; ?>
