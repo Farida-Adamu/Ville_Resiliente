@@ -64,8 +64,7 @@ $vr_sub   = vr_opt( 'vr_hero_subtitle' );
 	$post = $vr_featured; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 	setup_postdata( $post );
 	$vr_cat   = vr_primary_category();
-	$vr_photo = vr_opt( 'vr_card_photos' ) && has_post_thumbnail();
-	$vr_kind  = vr_illustration_kind( null, 0 );
+	$vr_photo = has_post_thumbnail();
 	?>
 	<section class="featured">
 		<div class="kicker-row">
@@ -75,15 +74,8 @@ $vr_sub   = vr_opt( 'vr_hero_subtitle' );
 			<a class="panel card-hover<?php echo $vr_photo ? ' has-photo' : ''; ?>" href="<?php the_permalink(); ?>" aria-label="<?php echo esc_attr( sprintf( 'Lire le récit : %s', get_the_title() ) ); ?>">
 				<?php if ( $vr_photo ) : ?>
 					<?php the_post_thumbnail( 'vr-lead', array( 'alt' => '' ) ); ?>
-				<?php else : ?>
-					<?php if ( $vr_cat ) : ?>
-						<span class="corner mono" style="color: var(--ink);"><?php echo esc_html( $vr_cat->name ); ?></span>
-					<?php endif; ?>
-					<span class="stack">
-						<?php echo vr_illustration( 'lagune', 260 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						<?php $vr_second = 'lagune' === $vr_kind ? 'gbaka' : $vr_kind; ?>
-						<?php echo vr_illustration( $vr_second, 'soleil' === $vr_second ? 130 : 260 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-					</span>
+				<?php elseif ( $vr_cat ) : ?>
+					<span class="corner mono" style="color: var(--ink);"><?php echo esc_html( $vr_cat->name ); ?></span>
 				<?php endif; ?>
 			</a>
 			<div>

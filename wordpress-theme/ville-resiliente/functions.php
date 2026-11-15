@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'VR_VERSION', '1.0.0' );
+define( 'VR_VERSION', '1.1.0' );
 
 /** Posts shown on the homepage: one featured + the "Autres récits" grid. */
 define( 'VR_HOME_COUNT', 7 );
@@ -52,6 +52,7 @@ function vr_assets() {
 		null
 	);
 	wp_enqueue_style( 'vr-style', get_stylesheet_uri(), array( 'vr-fonts' ), VR_VERSION );
+	wp_enqueue_script( 'vr-menu', get_template_directory_uri() . '/assets/menu.js', array(), VR_VERSION, true );
 
 	if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) {
 		wp_enqueue_script( 'comment-reply' );
@@ -99,7 +100,6 @@ function vr_defaults() {
 		'vr_hero_subtitle'        => 'Un carnet sur Abidjan, mobilité, mémoire et résilience urbaine. Essais, récits photographiques et notes de terrain.',
 		'vr_footer_tagline'       => 'Penser la ville lentement, depuis Abidjan.',
 		'vr_byline_place'         => 'Cocody',
-		'vr_card_photos'          => false,
 		'vr_newsletter_shortcode' => '',
 		'vr_newsletter_action'    => '',
 	);
@@ -124,7 +124,6 @@ function vr_customize_register( $wp_customize ) {
 		'vr_hero_subtitle'        => array( __( "Sous-titre de l'accueil", 'ville-resiliente' ), 'textarea', 'sanitize_textarea_field' ),
 		'vr_footer_tagline'       => array( __( 'Phrase du pied de page', 'ville-resiliente' ), 'text', 'sanitize_text_field' ),
 		'vr_byline_place'         => array( __( 'Lieu de signature (« Aldo, depuis … »)', 'ville-resiliente' ), 'text', 'sanitize_text_field' ),
-		'vr_card_photos'          => array( __( 'Afficher les images à la une sur les cartes (au lieu des illustrations)', 'ville-resiliente' ), 'checkbox', 'vr_sanitize_checkbox' ),
 		'vr_newsletter_shortcode' => array( __( "Infolettre : shortcode d'un plugin (ex. [mc4wp_form id=\"12\"])", 'ville-resiliente' ), 'text', 'sanitize_text_field' ),
 		'vr_newsletter_action'    => array( __( "Infolettre : ou URL d'envoi du formulaire (Mailchimp, Brevo…)", 'ville-resiliente' ), 'url', 'esc_url_raw' ),
 	);
@@ -149,10 +148,6 @@ function vr_customize_register( $wp_customize ) {
 	}
 }
 add_action( 'customize_register', 'vr_customize_register' );
-
-function vr_sanitize_checkbox( $value ) {
-	return (bool) $value;
-}
 
 /* ------------------------------------------------------------------
  * Pages created on activation (only when missing)
@@ -351,38 +346,6 @@ function vr_byline( $post = null ) {
 	return $place ? sprintf( '%s, depuis %s', $author, $place ) : $author;
 }
 
-/**
- * Which line illustration represents a post.
- * Order: custom field "illustration", then category keywords, then a rotation.
- */
-function vr_illustration_kind( $post = null, $index = 0 ) {
-	$allowed  = array( 'gbaka', 'cathedrale', 'soleil', 'lagune' );
-	$override = get_post_meta( get_post( $post )->ID, 'illustration', true );
-	if ( $override && in_array( $override, $allowed, true ) ) {
-		return $override;
-	}
-
-	$map = array(
-		'gbaka'      => array( 'mobil', 'transport', 'gbaka', 'route', 'deplacement', 'trafic' ),
-		'cathedrale' => array( 'patrimoine', 'monument', 'histoire', 'heritage', 'memoire', 'architecture', 'culture' ),
-		'soleil'     => array( 'energie', 'solaire', 'climat', 'environnement', 'renouvelable' ),
-		'lagune'     => array( 'lagune', 'eau', 'terrain', 'recit', 'note' ),
-	);
-	foreach ( (array) get_the_category( $post ) as $cat ) {
-		$slug = remove_accents( strtolower( $cat->slug . ' ' . $cat->name ) );
-		foreach ( $map as $kind => $needles ) {
-			foreach ( $needles as $needle ) {
-				if ( false !== strpos( $slug, $needle ) ) {
-					return $kind;
-				}
-			}
-		}
-	}
-
-	$rotation = array( 'gbaka', 'cathedrale', 'soleil' );
-	return $rotation[ $index % 3 ];
-}
-
 /* ------------------------------------------------------------------
  * SVG artwork
  * ------------------------------------------------------------------ */
@@ -472,17 +435,6 @@ function vr_illustration( $kind, $width = 240, $color = 'var(--ink)' ) {
 				. '<path d="M0 46 Q27 39 55 46 T110 46 T165 46 T220 46" opacity="0.42"></path>'
 				. '</svg>';
 	}
-}
-
-/** Default rendered width per illustration inside a square card. */
-function vr_card_illustration_width( $kind ) {
-	$widths = array(
-		'gbaka'      => 240,
-		'cathedrale' => 210,
-		'soleil'     => 120,
-		'lagune'     => 220,
-	);
-	return isset( $widths[ $kind ] ) ? $widths[ $kind ] : 220;
 }
 
 /* ------------------------------------------------------------------

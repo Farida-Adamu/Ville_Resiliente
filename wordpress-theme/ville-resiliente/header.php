@@ -24,7 +24,15 @@
 			</a>
 			<?php $vr_links = vr_nav_links(); ?>
 			<?php if ( $vr_links ) : ?>
-				<nav class="site" aria-label="<?php esc_attr_e( 'Menu principal', 'ville-resiliente' ); ?>">
+				<button class="menu-toggle" type="button" aria-controls="menu-principal" aria-expanded="false">
+					<span class="screen-reader-text"><?php esc_html_e( 'Menu', 'ville-resiliente' ); ?></span>
+					<svg viewBox="0 0 28 20" width="28" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+						<path class="bar bar-1" d="M1 2 H27"></path>
+						<path class="bar bar-2" d="M1 10 H27"></path>
+						<path class="bar bar-3" d="M1 18 H27"></path>
+					</svg>
+				</button>
+				<nav class="site" id="menu-principal" aria-label="<?php esc_attr_e( 'Menu principal', 'ville-resiliente' ); ?>">
 					<?php foreach ( $vr_links as $vr_link ) : ?>
 						<a class="mono<?php echo $vr_link['current'] ? ' current' : ''; ?>" href="<?php echo esc_url( $vr_link['url'] ); ?>"<?php echo $vr_link['current'] ? ' aria-current="page"' : ''; ?>><?php echo esc_html( $vr_link['label'] ); ?></a>
 					<?php endforeach; ?>

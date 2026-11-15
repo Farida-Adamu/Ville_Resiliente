@@ -3,7 +3,7 @@ Theme Name: Ville Résiliente
 Theme URI: https://lavilleresiliente.com
 Author: Ville Résiliente
 Description: Carnet éditorial sur Abidjan — mobilité, mémoire et résilience urbaine. Palette Sahel, typographie Bricolage Grotesque / Newsreader, illustrations au trait.
-Version: 1.0.0
+Version: 1.1.0
 Requires at least: 6.0
 Requires PHP: 7.4
 License: GNU General Public License v2 or later
@@ -769,3 +769,57 @@ footer.site .follow-note.ok { color: var(--ink); }
 .comments .comment-form .comment-form-cookies-consent label { display: inline; text-transform: none; letter-spacing: 0; font-family: var(--f-serif); font-size: 14px; }
 .comments .comment-notes,
 .comments .logged-in-as { font-size: 15px; color: var(--ink-2); }
+
+/* ——— Mobile menu (three-line button) ——— */
+
+header.site { position: relative; }
+
+.menu-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-right: -8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+.menu-toggle .bar { transition: transform .2s ease, opacity .2s ease; transform-origin: 14px 10px; }
+header.site.menu-open .menu-toggle .bar-1 { transform: translateY(8px) rotate(45deg); }
+header.site.menu-open .menu-toggle .bar-2 { opacity: 0; }
+header.site.menu-open .menu-toggle .bar-3 { transform: translateY(-8px) rotate(-45deg); }
+
+@media (max-width: 720px) {
+  header.site { gap: 16px; }
+  .lockup { min-width: 0; }
+  .lockup svg { flex: none; }
+  .lockup .name { font-size: 19px; }
+
+  .menu-toggle { display: inline-flex; flex: none; }
+
+  nav.site {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 4px 0 8px;
+    background: var(--sand);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+  header.site.menu-open nav.site { display: flex; }
+  nav.site a {
+    display: block;
+    padding: 16px 0;
+    font-size: 12px;
+  }
+  nav.site a + a { border-top: 1px solid var(--rule); }
+}
